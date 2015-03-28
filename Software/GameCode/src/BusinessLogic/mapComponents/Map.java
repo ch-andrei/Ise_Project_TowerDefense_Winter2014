@@ -4,27 +4,55 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
+import BusinessLogic.GUI.Observeable;
+
 /**
  * logical implementation of a game time map
  * @author AndreiC
  *
  */
-public class Map {
+public class Map extends Observeable{
 
 	public Random rand = new Random((int)System.currentTimeMillis());
 
+	/**
+	 * 	size of the map: length horizontal, width vertical
+	 */
 	private int length, width; 
-	// size of the map: length horizontal, width vertical
 
+	/**
+	 * 	 grid representation of all tiles on the map
+	 contains SceneryTiles and PathTiles
+	 */
 	private Tile[][] tiles;
-	// grid representation of all tiles on the map
-	// contains SceneryTiles and PathTiles
 
+
+	/**
+	 * x,y coordinates for start and end of the path
+	 */
 	private PathTile pathEntry, pathExit;
-	// x,y coordinates for start and end of the path
 
-	private final int MIN_SIZE = 5, MAX_SIZE = 30; 
-	// min and max allowed sizes for map
+	/**
+	 * min and max allowed sizes for map
+	 */
+	private final int MIN_SIZE = 5, MAX_SIZE = 20; 
+
+	/**
+	 * temporary holder for current position of critter (used in observer pattern demo)
+	 */
+	private PathTile currentCritterPosition;
+	
+	/**
+	 * updates current critter position when running
+	 */
+	protected Thread critterMovementThread;
+
+	private Object lock = new Object();
+
+	/**
+	 * controls critterMovementThread (it runs only while this is true)
+	 */
+	protected boolean interruptCritterPositionUpdates = true;
 
 	/**
 	 * default constructor for an instance of Map
@@ -72,6 +100,71 @@ public class Map {
 		generateRandomScenery(seed, density); 
 		// seed is used in Random(seed).
 		// density indicates amount of scenery elements on the map: 0.0-1.0, values less or more will be truncated 
+	}
+
+
+	/**
+	 * spawn a new thread for changing critter position. 
+	 * kills previous thread responsible for critter movement, if it exists.
+	 */
+	public void startAction(){
+
+		if (!interruptCritterPositionUpdates) {
+			setInterrupt(true);
+			currentCritterPosition = null;
+			return;
+		}
+
+		setInterrupt(true);
+
+		/*need to wait for previous thread to stop.
+		 from what i understand,
+		 needed wait time is defined by time to go through updating critter position
+		 if no sleep, critter will move faster and faster since new threads are spawned 
+		 but old ones are not stopped*/
+		try {
+			critterMovementThread.sleep(100);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		critterMovementThread = new Thread() { // new thread for updating critter position
+			public void run() {
+				setInterrupt(false);
+				currentCritterPosition = getPathEntry();
+				while(!interruptCritterPositionUpdates){
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+
+					// update critter position
+					if (currentCritterPosition != null) currentCritterPosition = currentCritterPosition.getNextTile();
+
+					notifyObservers();
+
+					if (currentCritterPosition == null) currentCritterPosition = getPathEntry();
+				}
+			}
+		};
+		critterMovementThread.start();
+	}
+
+	/**
+	 * sets 'interrupted' to desired value.
+	 * is responsible for controlling runtime of 'Thread action'.
+	 * @param rupt
+	 */
+	public void setInterrupt(boolean rupt){
+		synchronized(lock){
+			interruptCritterPositionUpdates = rupt;
+		}
+	}
+
+	public PathTile getCurrentCritterPosition() {
+		return currentCritterPosition;
 	}
 
 	/**
@@ -300,23 +393,26 @@ public class Map {
 	}
 
 	/**
-	 * sets scenery element of a pack of tiles to water 
-	 * @param number
+	 * generates and places random unique areas on the map (lakes, forests, etc)
+	 * @param number total number of random areas to generate
 	 */
-	public void generateRandomLake(int number){
+	public void generateUniqueAreas(int number){
 		int xStart, yStart;
 		Random random = new Random(System.currentTimeMillis());
-
+		int randomElement;
 		int counter = 0;
+		int area;
 		while (counter < number){
+			randomElement = random.nextInt(5);
+			area = random.nextInt(10)+1;
 			xStart = random.nextInt(length-1)+1;
 			yStart = random.nextInt(width-1)+1;
-			for (int i = xStart-random.nextInt(3); i <= xStart+random.nextInt(3); i++){
-				for (int j = yStart-random.nextInt(3); j <= yStart+random.nextInt(3); j++){
+			for (int i = xStart-random.nextInt(area); i <= xStart+random.nextInt(area); i++){
+				for (int j = yStart-random.nextInt(area); j <= yStart+random.nextInt(area); j++){
 					if (!(i >= 0 && i < length && j >= 0 && j < width)) continue;
-					if (tiles[i][j] instanceof SceneryTile && rand.nextInt(100) > 15){
+					if (tiles[i][j] instanceof SceneryTile && rand.nextInt(100) > 40){
 						SceneryTile tile = (SceneryTile) tiles[i][j];
-						tile.setSceneryElement(3);
+						tile.setSceneryElement(randomElement);
 					}
 				}
 			}	
@@ -332,6 +428,7 @@ public class Map {
 	public void placePathTile (int x, int y){
 		fixLinksForPathWhenPlacingNewTile(x,y);
 		tiles[x][y] = new PathTile(x,y);
+		this.notifyObservers();
 	}
 
 	/**
@@ -342,6 +439,7 @@ public class Map {
 	public void placeSceneryTile (int x, int y){
 		fixLinksForPathWhenPlacingNewTile(x,y);
 		tiles[x][y] = new SceneryTile(x,y);
+		this.notifyObservers();
 	}
 
 	public void applyRandomChange(){
@@ -357,6 +455,7 @@ public class Map {
 	public void placeSceneryTileElement(int x, int y, int element){
 		fixLinksForPathWhenPlacingNewTile(x,y);
 		tiles[x][y] = new SceneryTile(x, y, element);
+		this.notifyObservers();
 	}
 
 	/**
@@ -449,7 +548,8 @@ public class Map {
 	 */
 	public static Map generateRandomMapWithPath(){
 		Map map = new Map(20,20,(int)System.currentTimeMillis(),0.25); // x size, y size
-		map.generateRandomLake(5);
+		map.generateUniqueAreas(10);
+
 
 		try {
 			Queue<int[]> corners = new LinkedList<int[]>();
