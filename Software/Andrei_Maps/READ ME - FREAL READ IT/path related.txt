@@ -1,0 +1,60 @@
+// path related
+
+
+// inside map class
+PathTile pathEntry, pathExit;
+
+getPathEntry(), getPathExit()
+// do not use setters for these
+// path linker methods set these automatically
+
+// -- path builders --
+
+// YOU WILL MOSTLY (OR ONLY) USE
+
+buildPathAdapter(x,y)
+
+// method
+// this method uses buildPath(queue) method which handles all possible cases of path building
+// all u need to do is call it and indicate x,y coordinates of destination
+// destination must be on the same vertical or horizontal line as last point on path if such exists
+
+
+1.	/**
+	 * builds path along a series of points defined as corners.
+	 * each point must be reachable in a straight line from preceding point.
+	 * uses helper methods: setPathEntry, linkPathFromTo.
+	 * if map contains existing pathTiles prior to method call, may function incorrectly
+	 * @param corners 
+	 * 				queue of int[2] representing x,y coordinates of corners of the path to build
+	 */
+	 public void buildPath(Queue<int[] > corners) throws PathException
+	// use this method to link multiple corners
+
+
+2.	/**
+	 * adapter for linking paths with singular corner inputs (as opposed to whole path as corners)
+	 * @param x
+	 * @param y
+	 * @throws PathException 
+	 */
+	public void buildPathAdapter(int x, int y) throws PathException
+	// use this method if u want to add only one corner at a time
+
+
+3.	// DO NOT USE THIS DIRECTLY UNLESS REALLY NEED TO
+
+	// this method places and links pathtiles along a vertical or horizontal line disregarding previous path parameters 
+	// (it wont overwrite existing pathtiles though)
+
+	/** 
+	 * builds path by placing PathTiles and linking these between start and end coordinates.
+	 * requires straight horizontal or vertical line between input start and end coordinates.
+	 * requires starting tile to be on path prior to method call. Does not do anything otherwise
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 */
+	private void linkPathFromTo(int startX, int startY, int endX, int endY) throws PathException {
+

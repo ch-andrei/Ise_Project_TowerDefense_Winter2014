@@ -1,0 +1,50 @@
+// CODE TO PAINT TILES
+// see colors for tiles
+
+// loop stucture ensures that 0,0 origin is at left bottom corner
+
+// to get map from game instance do 
+// game.getMap()
+// game.getMap().getLength() etc
+
+for (int y = map.getWidth()-1; y >= 0; y--){
+			for (int x = 0; x < map.getLength(); x++){
+
+				Tile tile = map.getTile(x,y);
+
+				if (tile instanceof PathTile){
+					g.setColor(Color.GRAY);
+				}
+				else { // implies that tile must be a SceneryTile
+					SceneryTile sceneryTile = (SceneryTile) tile;
+					int color = sceneryTile.getSceneryElement();
+					
+					Color c = Color.GRAY;
+					
+					switch (color){
+					case 0:
+						c = new Color(24,84,14); // green grass
+						break;
+					case 1:
+						c = new Color(102,51,0); // brown clay
+						break;
+					case 2:
+						c = new Color(20,120,20); // bright green bush
+						break;
+					case 3:
+						c = new Color(0,100,255); // light blue water
+						break;
+					case 4:
+						c = new Color(25,51,0); // dark green tree
+						break;
+					case 5:
+						c = new Color(59,59,59); // dark grey rock
+						break;
+					}
+					
+					g.setColor(c);
+				}
+
+				g.fillRect(((x * SQUARE_SIZE )), (this.panel.getHeight()-((y+1) * SQUARE_SIZE )), SQUARE_SIZE-1, SQUARE_SIZE-1);
+			}
+		}

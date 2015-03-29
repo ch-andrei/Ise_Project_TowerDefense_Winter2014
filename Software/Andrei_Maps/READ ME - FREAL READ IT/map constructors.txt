@@ -1,0 +1,32 @@
+// map constructors
+
+
+// generates random map with scenery elements (NO PATH)
+// set same seed to regenerate same map
+
+	
+	/**
+	 * extended constructor with functionality: 
+	 * 1. generation of random scenery elements.
+	 * input seed and density for scenery elements
+	 * @param length
+	 * @param width
+	 * @param seed
+	 * @param density
+	 */
+	public Map(int length, int width, int seed, double density)
+		// seed is used in Random(seed).
+		// density indicates amount of scenery elements on the map: 0.0-1.0, values less or more will be truncated 
+
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		// BEST DENSITY AROUND 0.25  !!
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	
+
+// ********************************************************************************************************8
+	// only use if u want completely random map of size 20x20
+	/**
+	 * returns a generated random map. Five hardcoded paths can be randomly selected. 
+	 * @return
+	 */
+	public static Map generateRandomMapWithPath()
