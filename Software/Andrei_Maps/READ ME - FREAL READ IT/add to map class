@@ -1,0 +1,83 @@
+private int[][] tiles;
+	
+	public int[][] getTiles() {
+		return tiles;
+	}
+	
+	/**
+	 * generates random scenery elements for the map. Seed used in Random. Density between 0-1.0, adjusted otherwise.
+	 * @param seed
+	 * @param density
+	 */
+	private void generateRandomScenery(int seed, double density){
+		// make sure density is appropriately chosen
+		if (density < 0) density = 0;
+		else if (density > 1) density = 1;
+
+		Random gen = new Random(seed);
+
+		int counter = 0, area = mapSize * mapSize, maxElements = (int) (area * density);
+
+		for (int i = 0; i < mapSize; i++){
+			for (int j = 0; j < mapSize; j++){
+				if (	counter < maxElements && 
+						gen.nextInt(500) < density * 500){
+					
+					
+					double r = gen.nextDouble();
+					
+					int element = 0;
+					if (r > 0.7) element = 1;
+					else if (r > 0.5) element = 2;
+					else if (r > 0.3) element = 3;
+					else if (r > 0.15) element = 4;
+					else if (r > 0.05) element = 5;
+
+					tiles[i][j] = element;
+					
+					counter++;
+				}
+			}
+		}
+		
+		generateUniqueAreas((int)(density*40),seed);
+	}
+
+	/**
+	 * generates and places random unique areas on the map (lakes, forests, etc)
+	 * @param number total number of random areas to generate
+	 */
+	public void generateUniqueAreas(int number, int seed){
+		int xStart, yStart;
+		Random random = new Random(seed);
+		int element = 0;
+		int counter = 0;
+		int area;
+		while (counter < number){
+			
+			double r = random.nextDouble();
+			
+			if (r > 0.8) element = 1;
+			else if (r > 0.6) element = 2;
+			else if (r > 0.4) element = 3;
+			else if (r > 0.2) element = 4;
+			else if (r > 0.1) element = 5;
+			
+			area = random.nextInt(10)+1;
+			xStart = random.nextInt(mapSize-1)+1;
+			yStart = random.nextInt(mapSize-1)+1;
+					
+			for (int i = xStart-random.nextInt(area); i <= xStart+random.nextInt(area); i++){
+				for (int j = yStart-random.nextInt(area); j <= yStart+random.nextInt(area); j++){
+					
+					if (!(i >= 0 && i < mapSize && j >= 0 && j < mapSize)) continue;
+					
+					if ( random.nextInt(100) > 40){
+						
+						tiles[i][j] = (element);
+					}
+				}
+			}	
+			counter++;
+		}
+	}

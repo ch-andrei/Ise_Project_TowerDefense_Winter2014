@@ -1,0 +1,51 @@
+	private void setSceneryPathsIcon(int mapSize,
+			ArrayList<UMapTile> tilesOnPath, int sceneryNumber) {
+		try {
+			Image img;
+			ImageIcon icon;
+			
+			for (int i = 0; i < mapSize; i++) {
+				for (int j = 0; j < mapSize; j++) {
+					
+					if (!isTileOnPath(i, j, tilesOnPath)) {
+						
+						int c = map.getTiles()[i][j];
+						
+						String name = "";
+						
+						switch (c){
+						case 0:
+							name = "grass_36x36.png";
+							break;
+						case 1:
+							name = "clay_36x36.png"; // brown clay
+							break;
+						case 2:
+							name = "light_grass_36x36.png"; // bright green bush
+							break;
+						case 3:
+							name = "water_36x36.png";; // light blue water
+							break;
+						case 4:
+							name = "green_tree_36x36.png";// dark green tree
+							break;
+						case 5:
+							name = "darkrock_36x36.png"; // dark grey rock
+							break;
+						}
+						
+						img = Toolkit.getDefaultToolkit().getImage(
+								getClass().getClassLoader().getResource(
+										"newimages/" + name));
+						
+						icon = new ImageIcon(img);
+						
+						tableauBtnMagiques[i][j].setScenery(true);
+						tableauBtnMagiques[i][j].setIcon(icon);
+						tableauBtnMagiques[i][j].setDisabledIcon(icon);
+					}
+				}
+			}
+		} catch (Exception e) {
+		}
+	}
